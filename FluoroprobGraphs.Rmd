@@ -1,0 +1,86 @@
+---
+title: "Fluoroprobe Graphs"
+author: "Rosie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(lubridate)
+```
+
+## Fluoroprobe Graphs
+
+This automatically grabs data from the text file and generates reports so you can look at the fluoroprobe data.
+
+
+```{r}
+
+#this is the sonde data
+FP = read_csv("../FRK.TXT", col_names = FALSE)
+
+FP2 = rename(FP, Location = X1, Instrument = X2, Date = X3, Time = X4, Temperature = X6, Spec_Cond = X8, DO_mgL = X10, DO_perc = X12,
+            pH = X14, Turb = X16, Chl_RFU = X18, Chl_ugL = X20, BGA_RFU = X22, BGA_ugL = X24, Air_temp = X26, Solar_radiation = X28,
+            WindVelocity = X30, WindDirection = X32) %>%
+  select(-starts_with("X")) %>%
+  mutate(Datetime = ymd_hms(paste(as.character(Date),as.character(Time))))
+
+FPlong = pivot_longer(FP2, cols = c(Temperature:WindDirection), names_to = "Analyte", values_to = "Value")
+
+ggplot(FPlong, aes(x=Datetime, y = Value )) +
+  geom_line()+
+  facet_wrap(~Analyte, scales = "free_y")
+
+```
+
+## Just the past month
+
+
+```{r }
+
+today = Sys.Date()
+
+thismonth = filter(FPlong, Date > today -30)
+
+ggplot(thismonth, aes(x=Datetime, y = Value )) +
+  geom_line()+
+  facet_wrap(~Analyte, scales = "free_y")
+
+
+```
+
+## Fluoroprobe data
+
+```{r}
+FPF = read_csv("../FRK_FP.TXT", col_names = FALSE)
+
+FPF2 = rename(FPF, Location = X1, Instrument = X2, Date = X3, Time = X4, Temperature = X6, Transmission = X8, GreenAlgae = X10, BGA = X12,
+            Diatoms = X14, Cryptophytes = X16, Yellow_substances = X18, Algae5 = X20, Algae6 = X22, Algae7 = X24) %>%
+  select(-starts_with("X")) %>%
+  mutate(Datetime = ymd_hms(paste(as.character(Date),as.character(Time))))
+
+FPFlong = pivot_longer(FPF2, cols = c(Temperature:Algae7), names_to = "Analyte", values_to = "Value")
+
+ggplot(FPFlong, aes(x=Datetime, y = Value )) +
+
+  geom_line()+
+  facet_wrap(~Analyte, scales = "free_y")
+
+
+```
+
+## Just the past month
+
+
+```{r }
+
+thismonthF = filter(FPFlong, Date > today -30)
+
+ggplot(thismonthF, aes(x=Datetime, y = Value )) +
+  geom_line()+
+  facet_wrap(~Analyte, scales = "free_y")
+
+
+```
