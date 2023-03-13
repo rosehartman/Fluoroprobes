@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE,  fig.height=10, fig.width=10 )
 library(tidyverse)
 library(lubridate)
 ```
@@ -61,7 +61,8 @@ FPF2 = rename(FPF, Location = X1, Instrument = X2, Date = X3, Time = X4, Tempera
   select(-starts_with("X")) %>%
   mutate(Datetime = ymd_hms(paste(as.character(Date),as.character(Time))))
 
-FPFlong = pivot_longer(FPF2, cols = c(Temperature:Algae7), names_to = "Analyte", values_to = "Value")
+FPFlong = pivot_longer(FPF2, cols = c(Temperature:Algae7), names_to = "Analyte", values_to = "Value") %>%
+  filter(!Analyte %in% c("Algae5", "Algae6", "Algae7"))
 
 ggplot(FPFlong, aes(x=Datetime, y = Value )) +
 
@@ -74,7 +75,7 @@ ggplot(FPFlong, aes(x=Datetime, y = Value )) +
 ## Just the past month
 
 
-```{r }
+```{r, fig.height=10, fig.width=10 }
 
 thismonthF = filter(FPFlong, Date > today -30)
 
@@ -84,3 +85,20 @@ ggplot(thismonthF, aes(x=Datetime, y = Value )) +
 
 
 ```
+
+### Now Daily mean of just the algae
+
+```{r, fig.height=5, fig.width=15}
+
+algae = filter(FPFlong, Analyte %in% c("BGA", "Cryptophytes", "Diatoms", "Green Algae", "Yellow_substances")) %>%
+  group_by(Date, Analyte) %>%
+  summarize(Value = mean(Value, na.rm =T))
+
+ggplot(algae, aes(x=Date, y = Value, color = Analyte)) +
+  geom_line()+
+  theme_bw()+
+  ylab("Chlorophyll Concentration (ug/L)")
+
+
+```
+
