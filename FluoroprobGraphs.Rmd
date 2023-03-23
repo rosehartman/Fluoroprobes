@@ -94,7 +94,7 @@ ggplot(thismonthF, aes(x=Datetime, y = Value )) +
 
 ```{r, fig.height=10, fig.width=15}
 
-algae = filter(FPFlong, Analyte %in% c("BGA", "Cryptophytes", "Diatoms", "Green Algae", "Yellow_substances")) %>%
+algae = filter(FPFlong, Analyte %in% c("BGA", "Cryptophytes", "Diatoms", "GreenAlgae")) %>%
   group_by(Date, Analyte) %>%
   summarize(Value = mean(Value, na.rm =T))
 
